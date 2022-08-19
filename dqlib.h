@@ -9,72 +9,157 @@ typedef struct cell
  void* next;
 } cell;
 
+typedef struct header
+{
+ //Platz für Daten
+ unsigned int size;
+ //Verkettungen
+ cell* last;
+ cell* first;
+} header;
+
+//Initialisierung des Headers
+
+header* newdequeueheader()
+{
+ header* temp = calloc(1,sizeof(header));
+ if(temp == NULL)
+ {
+  printf("Error while allocating the header.\n");
+  exit(1);
+ }
+ return temp;
+}
+///löscht alle Zellen und den Header
+void freedequeue(header* anchor)
+{ 
+ if(anchor->size)
+ {
+  cell* todelete;
+
+  for (int i=anchor->size; i>0; i--)
+  {
+   todelete = anchor->first;
+   anchor->first = anchor->first->next;
+   free(todelete); 
+  }
+ } 
+  free(anchor);
+};
+
 //Erstellt eine neue Zelle...
-cell* newdequeue(int content)
+cell* newcell(int content)
 {
  cell* temp = calloc(1,sizeof(cell));
- temp->data = content;
- return temp;
+ if(temp == NULL)
+ {
+  printf("Error while allocating a cell.\n");
+  return NULL;
+ }
+ else
+ {
+  temp->data = content;
+  return temp;
+ }
 };
 //...und hängt sie vorne an eine DEQueue an
-cell* addfront(int content, cell* anchor)
+int addfront(header* anchor, int content)
 {
- cell* temp = newdequeue(content);
- temp->next = anchor;
- anchor->prev = temp;
- return temp;
+
+ cell* temp = newcell(content);
+ if(temp==NULL)
+ {
+  freedequeue(anchor);
+  exit(1);
+ }
+ if(anchor->size)
+ {
+  temp->next = anchor->first;
+  anchor->first->prev = temp;
+ }
+ else
+ {
+  anchor->last =temp;
+ }
+ anchor->first = temp;
+ anchor->size++;
+ return 0;
 };
 //...und hängt sie hinten an eine DEQueue an
-cell* addback(int content, cell* anchor)
+int addback(header* anchor, int content)
 {
- cell* temp = newdequeue(content);
- temp->prev = anchor;
- anchor->next = temp;
- return temp;
+ cell* temp = newcell(content);
+ if(temp==NULL)
+ {
+  freedequeue(anchor);
+  exit(1);
+ }
+ if(anchor->size)
+ {
+ temp->prev = anchor->last;
+ anchor->last->next = temp;
+ }
+ else
+ {
+  anchor->first = temp;
+ }
+ anchor->last = temp;
+ anchor->size++;
+ return 0;
 };
 //löscht die forderste Zelle (die man der Funktion gibt), gibt die neue forderste Zelle zurück 
-cell* popfront (cell* anchor)
+int popfront (header* anchor)
 {
- cell* temp = anchor->next;
- free(anchor);
- temp->prev = 0;
- return temp;
+ if(anchor->size)
+ {
+  cell* temp = anchor->first->next;
+  free(anchor->first);
+  temp->prev = 0;
+  anchor->first = temp;
+  anchor->size--;
+  if(!anchor->size)
+  {
+   anchor->last = NULL;
+  }
+  return 0;
+ }
+ else
+ {
+  return 1;
+ }
 }
 //löscht die hinterste Zelle (die man der Funktion gibt), gibt die neue hinterste Zelle zurück 
-cell* popback (cell* anchor)
+int popback (header* anchor)
 {
- cell* temp = anchor->prev;
- free(anchor);
- temp->next = 0;
- return temp;
+ if(anchor->size)
+ {
+  cell* temp = anchor->last->prev;
+  free(anchor->last);
+  temp->next = 0;
+  anchor->last = temp;
+  anchor->size--;
+  if(!anchor->size)
+  {
+   anchor->first = 0;
+  }
+  return 0;
+ }
+ else
+ {
+  return 1;
+ }
 }
 //Gibt alle Daten aus
-void printall(cell* anchor)
+
+void printall(header* anchor)
 { 
- cell* temp1 = anchor;
+ cell* temp1 = anchor->first;
  cell* temp2;
  do 
  {
   temp2 = temp1->next;
 
   printf("%d\n", temp1->data);
-
-  temp1=temp2;
- }
- while (temp1 != NULL);
-  
-
-};
-///löscht alle Zellen
-void freedequeue(cell* zelle)
-{ 
- cell* temp1 = zelle;
- cell* temp2;
- do 
- {
-  temp2 = temp1->next;
-
-  free(temp1);
 
   temp1=temp2;
  }
