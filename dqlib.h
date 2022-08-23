@@ -114,10 +114,13 @@ int popfront (header* anchor)
  {
   cell* temp = anchor->first->next;
   free(anchor->first);
-  temp->prev = 0;
   anchor->first = temp;
   anchor->size--;
-  if(!anchor->size)
+  if(anchor->size)
+  {
+   temp->prev = NULL;
+  }
+  else
   {
    anchor->last = NULL;
   }
@@ -135,12 +138,16 @@ int popback (header* anchor)
  {
   cell* temp = anchor->last->prev;
   free(anchor->last);
-  temp->next = 0;
+
   anchor->last = temp;
   anchor->size--;
-  if(!anchor->size)
+  if(anchor->size)
   {
-   anchor->first = 0;
+   temp->next = NULL;
+  }
+  else
+  {
+   anchor->first = NULL;
   }
   return 0;
  }
